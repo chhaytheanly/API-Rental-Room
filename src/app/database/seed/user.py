@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from src.app.model.user import User
-from src.app.model.role import Role
-from src.app.utils.argon2 import hash_password
+from app.model.user import User
+from app.model.role import Role
+from app.utils.argon2 import hash_password
 
 # Define the print color for better visibility
 class bcolors:

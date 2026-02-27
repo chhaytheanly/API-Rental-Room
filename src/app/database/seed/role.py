@@ -10,9 +10,11 @@ def seed_roles(db: Session):
     roles = [
         Role(name="Admin", description="System administrator"),
         Role(name="Staff", description="System staff"),
+        Role(name="User", description="Regular user")
     ]
 
-    db.add_all(roles)
+    db.add(roles)
+    db.flush()
     db.commit()
 
     print("Roles seeded successfully.")

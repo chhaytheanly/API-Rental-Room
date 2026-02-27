@@ -29,6 +29,10 @@ from src.app.config.base import Base
 from src.app.config.config import settings
 from src.app.model.user import User
 from src.app.model.role import Role
+from src.app.model.room import Room
+from src.app.model.tenant import Tenant
+from src.app.model.invoice import Invoice
+from src.app.model.payment import Payment
 
 if settings.DATABASE_URL:
     config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

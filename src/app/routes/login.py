@@ -9,7 +9,7 @@ from ..services.user import UserService
 from ..config.session import get_db
 from ..schema.user import Token, LoginRequest
 
-load_dotenv
+load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
