@@ -1,19 +1,35 @@
-# database/seed.py
+import sys
+from pathlib import Path
+project_root = Path(__file__).resolve().parents[4]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from datetime import date, datetime, timedelta
-from random import randint, choice, uniform
-import os
-
-from ...model.role import Role
-from ...model.user import User
-from ...model.room import Room
-from ...model.tenant import Tenant
-from ...model.invoice import Invoice, InvoiceStatus
-from ...model.payment import Payment, PaymentStatus 
-from ...utils.argon2 import hash_password
+from random import randint, uniform
+from src.app.model.role import Role
+from src.app.model.user import User
+from src.app.model.room import Room
+from src.app.model.tenant import Tenant
+from src.app.model.invoice import Invoice, InvoiceStatus
+from src.app.model.payment import Payment, PaymentStatus 
+from src.app.utils.argon2 import hash_password
 
 
-def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
+# Define Color
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+def seed_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
     """
     Seeds comprehensive mock data for the simplified rental system.
     
@@ -29,7 +45,7 @@ def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
         num_rooms: Number of mock rooms to create
     """
     
-    print("🌱 Starting mock data seeding for simplified rental system...")
+    print(f"{bcolors.OKGREEN}🌱 Starting mock data seeding for simplified rental system...{bcolors.ENDC}")
     
     # ==================== 1. Seed Roles ====================
     if db.query(Role).count() == 0:
@@ -40,11 +56,10 @@ def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
         ]
         db.add_all(roles)
         db.commit()
-        print(f"✓ Created {len(roles)} roles")
+        print(f"{bcolors.OKGREEN}✓ Created {len(roles)} roles{bcolors.ENDC}x")
     
     admin_role = db.query(Role).filter(Role.name == "Admin").first()
     staff_role = db.query(Role).filter(Role.name == "Staff").first()
-    tenant_role = db.query(Role).filter(Role.name == "Tenant").first()
     
     # ==================== 2. Seed Admin User ====================
     if db.query(User).filter(User.email == "admin@example.com").count() == 0:
@@ -57,7 +72,7 @@ def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
         )
         db.add(admin)
         db.commit()
-        print("✓ Created admin user")
+        print(f"{bcolors.OKGREEN}✓ Created admin user{bcolors.ENDC}")
     
     # ==================== 3. Seed Staff Users ====================
     staff_profiles = [
@@ -81,20 +96,30 @@ def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
     if staff_users:
         db.add_all(staff_users)
         db.commit()
-        print(f"✓ Created {len(staff_users)} staff users")
+        print(f"{bcolors.OKGREEN}✓ Created {len(staff_users)} staff users{bcolors.ENDC}")
     
     # ==================== 4. Seed Rooms ====================
     room_catalog = [
-        {"name": "Deluxe Suite #101", "desc": "Spacious suite with king bed, balcony, city view", "price": 800},
-        {"name": "Executive Room #102", "desc": "Modern room with queen bed and work desk", "price": 650},
-        {"name": "Standard Double #103", "desc": "Comfortable double room with essential amenities", "price": 450},
-        {"name": "Single Room #104", "desc": "Cozy single room perfect for solo travelers", "price": 350},
-        {"name": "Family Suite #105", "desc": "Large suite with multiple beds, ideal for families", "price": 900},
-        {"name": "Economy Room #106", "desc": "Budget-friendly room with basic facilities", "price": 300},
-        {"name": "Premium Suite #107", "desc": "Luxury suite with separate living area", "price": 1000},
-        {"name": "Garden View #108", "desc": "Peaceful room overlooking the garden", "price": 550},
-        {"name": "Ocean View #109", "desc": "Stunning ocean views from private balcony", "price": 1200},
-        {"name": "Studio Apt #110", "desc": "Self-contained studio with kitchenette", "price": 700}
+        {"name": "A01", "desc": "Spacious suite with king bed, balcony, city view", "price": 50},
+        {"name": "A02", "desc": "Modern room with queen bed and work desk", "price": 50},
+        {"name": "A03", "desc": "Comfortable double room with essential amenities", "price": 50},
+        {"name": "A04", "desc": "Cozy single room perfect for solo travelers", "price": 50},
+        {"name": "A05", "desc": "Large suite with multiple beds, ideal for families", "price": 50},
+        {"name": "A06", "desc": "Budget-friendly room with basic facilities", "price": 50},
+        {"name": "A07", "desc": "Luxury suite with separate living area", "price": 50},
+        {"name": "A08", "desc": "Peaceful room overlooking the garden", "price": 50},
+        {"name": "A09", "desc": "Stunning ocean views from private balcony", "price": 50},
+        {"name": "A10", "desc": "Self-contained studio with kitchenette", "price": 50},
+        {"name": "B01", "desc": "Elegant room with vintage decor", "price": 50},
+        {"name": "B02", "desc": "Cozy room with modern decor", "price": 50},
+        {"name": "B03", "desc": "Spacious suite with private balcony", "price": 50},
+        {"name": "B04", "desc": "Budget-friendly room with basic amenities", "price": 50},
+        {"name": "B05", "desc": "Family room with multiple beds", "price": 50},
+        {"name": "B06", "desc": "Luxury suite with separate living area", "price": 50},
+        {"name": "B07", "desc": "Room with stunning ocean views", "price": 50},
+        {"name": "B08", "desc": "Self-contained studio with kitchenette", "price": 50},
+        {"name": "B09", "desc": "Elegant room with vintage decor", "price": 50},
+        {"name": "B10", "desc": "Cozy room with modern decor", "price": 50}
     ]
     
     rooms = []
@@ -102,22 +127,18 @@ def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
         room_data = room_catalog[i]
         
         if db.query(Room).filter(Room.name == room_data["name"]).count() == 0:
-            # Make ~70% of rooms available, ~30% occupied for realistic testing
-            is_available = i >= 3  # First 3 rooms will be occupied
-            
             room = Room(
                 name=room_data["name"],
                 description=room_data["desc"],
-                price=room_data["price"] + uniform(-20, 50),  # Small price variation
-                is_available=is_available,
-                updated_at=datetime.utcnow()
+                price=room_data["price"],
+                is_available=False
             )
             rooms.append(room)
     
     if rooms:
         db.add_all(rooms)
         db.flush()  # Get IDs without committing yet
-        print(f"✓ Created {len(rooms)} rooms")
+        print(f"{bcolors.OKGREEN}✓ Created {len(rooms)} rooms{bcolors.ENDC}")
     
     # ==================== 5. Seed Tenants (Direct Room Assignment) ====================
     tenant_profiles = [
@@ -130,7 +151,17 @@ def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
         {"name": "George Kim", "email": "george.k@email.com", "phone": "012-901-2345", "id_card": "ID007890"},
         {"name": "Hannah Park", "email": "hannah.p@email.com", "phone": "012-012-3456", "id_card": "ID008901"},
         {"name": "Isaac Tan", "email": "isaac.t@email.com", "phone": "012-123-4567", "id_card": "ID009012"},
-        {"name": "Julia Nguyen", "email": "julia.n@email.com", "phone": "012-234-5678", "id_card": "ID010123"}
+        {"name": "Julia Nguyen", "email": "julia.n@email.com", "phone": "012-234-5678", "id_card": "ID010123"},
+        {"name": "Kevin Lim", "email": "kevin.l@email.com", "phone": "012-345-6780", "id_card": "ID011234"},
+        {"name": "Lisa Wong", "email": "lisa.w@email.com", "phone": "012-456-7891", "id_card": "ID012345"},
+        {"name": "Marcus Lee", "email": "marcus.l@email.com", "phone": "012-567-8902", "id_card": "ID013456"},
+        {"name": "Nina Patel", "email": "nina.p@email.com", "phone": "012-678-9013", "id_card": "ID014567"},
+        {"name": "Oscar Chen", "email": "oscar.c@email.com", "phone": "012-789-0124", "id_card": "ID015678"},
+        {"name": "Paula Kim", "email": "paula.k@email.com", "phone": "012-890-1235", "id_card": "ID016789"},
+        {"name": "Quinn Tan", "email": "quinn.t@email.com", "phone": "012-901-2346", "id_card": "ID017890"},
+        {"name": "Rachel Ng", "email": "rachel.n@email.com", "phone": "012-012-3457", "id_card": "ID018901"},
+        {"name": "Samuel Ho", "email": "samuel.h@email.com", "phone": "012-123-4568", "id_card": "ID019012"},
+        {"name": "Tina Zhao", "email": "tina.z@email.com", "phone": "012-234-5679", "id_card": "ID020123"}
     ]
     
     # Get occupied rooms (is_available=False)
@@ -162,16 +193,14 @@ def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
             id_card=profile["id_card"],
             is_active=True,
             check_in_date=check_in,
-            check_out_date=None,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            check_out_date=None
         )
         tenants.append(tenant)
     
     if tenants:
         db.add_all(tenants)
         db.flush()
-        print(f"✓ Created {len(tenants)} active tenants")
+        print(f"{bcolors.OKGREEN}✓ Created {len(tenants)} active tenants{bcolors.ENDC}")
     
     # ==================== 6. Seed Invoices (Monthly Billing) ====================
     today = date.today()
@@ -249,7 +278,7 @@ def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
     if invoices:
         db.add_all(invoices)
         db.flush()
-        print(f"✓ Created {len(invoices)} invoices")
+        print(f"{bcolors.OKGREEN}✓ Created {len(invoices)} invoices{bcolors.ENDC}")
     
     # ==================== 7. Seed Payments (Linked to Invoices) ====================
     payments = []
@@ -282,11 +311,11 @@ def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
     if payments:
         db.add_all(payments)
         db.commit()  # Final commit for all data
-        print(f"✓ Created {len(payments)} payments")
+        print(f"{bcolors.OKGREEN}✓ Created {len(payments)} payments{bcolors.ENDC}")
     
     # ==================== Summary ====================
-    print("\n✅ Mock data seeding completed successfully!")
-    print(f"\n📊 Database Summary:")
+    print(f"\n{bcolors.OKGREEN}✅ Mock data seeding completed successfully!{bcolors.ENDC}")
+    print(f"\n 📊 Database Summary:")
     print(f"   Roles:     {db.query(Role).count()}")
     print(f"   Users:     {db.query(User).count()} (admin/staff accounts)")
     print(f"   Rooms:     {db.query(Room).count()}")
@@ -314,27 +343,28 @@ def seed_mock_data(db: Session, num_tenants: int = 10, num_rooms: int = 8):
 def clear_all_data(db: Session):
     """
     Clears all data in correct order (respecting foreign keys)
+    Also resets auto-increment sequences back to 1
     """
-    print("🗑️  Clearing all data...")
+    print("🗑️  Clearing all data and resetting sequences...")
     
-    # Delete in order: child tables first
-    db.query(Payment).delete()
-    db.query(Invoice).delete()
-    db.query(Tenant).delete()
-    db.query(Room).delete()
-    db.query(User).delete()
-    db.query(Role).delete()
-    
-    db.commit()
-    print("✓ All data cleared")
+    # Handle cases where tables might not exist yet
+    try:
+        # Use TRUNCATE with CASCADE and RESTART IDENTITY to reset sequences
+        # This is much faster than DELETE and resets IDs to 1
+        db.execute(text("TRUNCATE TABLE payments, invoices, tenants, rooms, users, roles RESTART IDENTITY CASCADE"))
+        db.commit()
+        print("✓ All data cleared and IDs reset to 1")
+    except Exception as e:
+        db.rollback()
+        print(f"⚠️  No existing data to clear (tables may not exist yet): {type(e).__name__}")
 
 
-def reset_and_seed(db: Session, num_tenants: int = 10, num_rooms: int = 8):
+def reset_and_seed(db: Session, num_tenants: int = 20, num_rooms: int = 20):
     """
     Clears existing data and seeds fresh mock data
     """
     clear_all_data(db)
-    return seed_mock_data(db, num_tenants, num_rooms)
+    return seed_data(db, num_tenants, num_rooms)
 
 
 def seed_payment_scenarios(db: Session):
@@ -361,7 +391,7 @@ def seed_payment_scenarios(db: Session):
         amount_paid=0,
         due_date=date(2024, 1, 5),
         status=InvoiceStatus.late,
-        created_at=date(2024, 1, 1)
+        # created_at=date(2024, 1, 1)
     )
     db.add(old_invoice)
     
@@ -375,7 +405,7 @@ def seed_payment_scenarios(db: Session):
         amount_paid=room.price * 0.5,
         due_date=date(2024, 2, 5),
         status=InvoiceStatus.pending,
-        created_at=date(2024, 2, 1)
+        # created_at=date(2024, 2, 1)
     )
     db.add(partial_invoice)
     db.flush()  # Flush to get invoice IDs
@@ -395,15 +425,14 @@ def seed_payment_scenarios(db: Session):
 
 # ==================== CLI Entry Point ====================
 if __name__ == "__main__":
-    from ...config.session import local_session
-    from ...config.session import engine
+    from src.app.config.session import local_session, engine
     
     print("🚀 Running seed script directly...")
     
     db = local_session()
     try:
         # Reset and seed with default counts
-        reset_and_seed(db, num_tenants=10, num_rooms=8)
+        reset_and_seed(db, num_tenants=20, num_rooms=20)
         
         # Add edge-case scenarios
         seed_payment_scenarios(db)

@@ -8,4 +8,3 @@ class QueryParameters(BaseModel):
     page: Optional[int] = 1
     limit: Optional[int] = 10
     search: Optional[str] = None
-

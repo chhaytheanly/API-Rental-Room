@@ -1,5 +1,5 @@
 import os 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from tokenize import Token
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException
@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 from ..middleware.jwt_service import JWTService
 from ..services.user import UserService
 from ..config.session import get_db
-from ..schema.user import Token, LoginRequest
+from ..schema.user import LoginRequest
+from ..schema.user import Token
 
 load_dotenv()
 

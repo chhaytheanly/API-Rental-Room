@@ -3,18 +3,14 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import date, datetime
 from enum import Enum
+from .query import QueryParameters
+from .payment import PaymentStatus
 
 # ==================== Enums ====================
 
 class RoomStatus(str, Enum):
     available = "available"
     occupied = "occupied"
-
-class PaymentStatus(str, Enum):
-    paid = "paid"
-    late = "late"
-    pending = "pending"
-    no_invoice = "no_invoice"
 
 # ==================== Request Schemas ====================
 
@@ -45,22 +41,6 @@ class RoomUpdate(BaseModel):
             "example": {
                 "name": "Room 101 Updated",
                 "price": 550.00
-            }
-        }
-
-class TenantAssign(BaseModel):
-    name: str = Field(..., min_length=1, max_length=255)
-    email: Optional[str] = Field(None, email=True)
-    phone: Optional[str] = Field(None, max_length=50)
-    id_card: Optional[str] = Field(None, max_length=100)
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "name": "John Doe",
-                "email": "john@example.com",
-                "phone": "012-345-6789",
-                "id_card": "ABC123456"
             }
         }
 
@@ -103,7 +83,7 @@ class TenantInfo(BaseModel):
 
 class PaymentInfo(BaseModel):
     id: int
-    amount: float
+    amount: float = 50.00
     paid_at: datetime
     image: Optional[str] = None
 
@@ -124,7 +104,7 @@ class InvoiceInfo(BaseModel):
     year: int
     amount: float
     amount_paid: float
-    status: str
+    status: PaymentStatus  # Use the PaymentStatus enum
     due_date: date
     paid_at: Optional[datetime] = None
 
@@ -204,9 +184,7 @@ class SummaryStats(BaseModel):
     paid: int = 0
 
 class PaginationMeta(BaseModel):
-    page: int
-    limit: int
-    total: int
+    query_params : QueryParameters
     summary: Optional[SummaryStats] = None
 
 class RoomListResponse(BaseModel):
@@ -256,22 +234,6 @@ class PaymentResponse(BaseModel):
     image: Optional[str] = None
     status: str
     paid_at: datetime
-
-    class Config:
-        from_attributes = True
-
-class InvoiceResponse(BaseModel):
-    id: int
-    room_id: int
-    tenant_id: int
-    month: int
-    year: int
-    amount: float
-    amount_paid: float
-    status: str
-    due_date: date
-    created_at: datetime
-    paid_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
