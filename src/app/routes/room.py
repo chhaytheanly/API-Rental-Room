@@ -78,9 +78,10 @@ def get_monthly_report(month: int, year: int, db: Session = Depends(get_db)):
     return InvoiceService.get_payment_report(db, month, year)
 
 @room_router.delete("/{room_id}")
-def delete_room(room_id: int, db: Session = Depends(get_db)):
+def delete(room_id: int, db: Session = Depends(get_db)):
     try:
         result = RoomService.delete_room(db, room_id)
+        print("Room deletion result:", result)
         db.commit()
         return result
     except ValueError as e:

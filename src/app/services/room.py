@@ -169,8 +169,18 @@ class RoomService:
         return room
     
     @staticmethod
-    def delete_room(db: Session, room_id: int) -> Dict[str, str]:
-        """Delete room (only if no active tenant)"""
+    # def delete_room(db: Session, room_id: int) -> Dict[str, str]:
+    #     """Delete room (only if no active tenant)"""
+    #     room = db.query(Room).filter(Room.id == room_id).first()
+    #     if not room:
+    #         raise ValueError("Room not found")
+        
+    #     if not room.is_available:
+    #         raise ValueError("Cannot delete room with active tenant. Remove tenant first.")
+        
+    #     db.delete(room)
+    #     return {"message": "Room deleted successfully"}
+    def delete_room(db: Session, room_id: int):
         room = db.query(Room).filter(Room.id == room_id).first()
         if not room:
             raise ValueError("Room not found")
