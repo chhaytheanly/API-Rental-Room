@@ -1,9 +1,10 @@
 from typing import Optional
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from ..model.user import User
 from ..model.role import Role
 from ..schema.user import LoginRequest, UserCreate, UserUpdate, UserResponse
-from fastapi import Form, HTTPException, Query, UploadFile
+from fastapi import HTTPException, UploadFile
 from ..utils.argon2 import hash_password, verify_password
 from ..utils.get_image import get_image
 
@@ -54,13 +55,27 @@ class UserService:
             raise ValueError("User not found")
         return UserResponse.model_validate(user)
     
+    # Design pagination for get all users and limits
     @staticmethod
-    def getAll(db: Session) -> list[UserResponse]:
-        users = db.query(User).all()
-        if not users:
-            raise ValueError("User not found")
+    def getAll(db: Session, page: int, limit: int):
+        total = db.query(func.count(User.id)).scalar()
+
+        users = (
+            db.query(User)
+            .offset((page - 1) * limit)
+            .limit(limit)
+            .all()
+        )
         
-        return [UserResponse.model_validate(user) for user in users]
+        return {
+            "data": [UserResponse.model_validate(user) for user in users],
+            "meta": {
+                "page": page,
+                "limit": limit,
+                "total": total,
+                }
+        }
+            
     @staticmethod
     def update_user(db: Session, id: int, data: UserUpdate):
         user = db.query(User).filter(User.id == id).first()

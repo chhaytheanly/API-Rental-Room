@@ -12,4 +12,3 @@ class Role(Base):
     
     # Define a relationship to the User model
     users = relationship("User", back_populates="role", cascade="all, delete")
-    

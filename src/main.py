@@ -1,19 +1,59 @@
 from fastapi.staticfiles import StaticFiles
 from .app.config.session import get_db
 from fastapi import APIRouter, Depends, FastAPI
+from .app.config.scheduler import init_scheduler, shutdown_scheduler
 from .app.routes.user import user_router
 from .app.routes.login import loggin_router
+from .app.routes.room import room_router
+from .app.routes.billing import router as billing_router
+from .app.routes.tanent import tenant_router
+from fastapi.middleware.cors import CORSMiddleware
+from .app.middleware.guard.permission import PermissionGuard
 
-app = FastAPI(title="User Management API", version="1.0.0")
+app = FastAPI(title="Room Management API", version="1.0.0")
 
-app.include_router(loggin_router)
+public_routes = [loggin_router]
+
+
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust this in production to specific domains
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+permission = PermissionGuard.admin_only
+print("Admin-only routes will be protected with PermissionGuard")
+
+# Protect the routes that require admin access
+for router in [user_router, room_router, billing_router, tenant_router]:
+    for route in router.routes:
+        if route not in [r for r in public_routes]:
+            route.dependencies.append(Depends(permission))
+        else:
+            print(f"Route {route} is public and will not be protected with PermissionGuard")
 
 router = APIRouter(prefix="/api/v1")
-
+app.include_router(prefix=router.prefix, router=loggin_router)
 app.include_router(prefix=router.prefix, router=user_router)
+app.include_router(prefix=router.prefix, router=room_router)
+app.include_router(prefix=router.prefix, router=billing_router)
+app.include_router(prefix=router.prefix, router=tenant_router)
 
 # Serve static files from the "uploads" directory
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
+@app.on_event("startup")
+def on_startup():
+    init_scheduler()
+
+
+@app.on_event("shutdown")
+def on_shutdown():
+    shutdown_scheduler()
 
 @app.get(router.prefix + "/")
 def read_root(db=Depends(get_db)):

@@ -26,12 +26,9 @@ def get_user_by_id(id: int, db: Session = Depends(get_db)):
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     
-@user_router.get("/", response_model=list[UserResponse])
-def get_all_users(db: Session = Depends(get_db)):
-    try:
-        return UserService.getAll(db)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+@user_router.get("/")
+def get_all_users(db: Session = Depends(get_db), page: int = 1, limit: int = 10):
+    return  UserService.getAll(db, page, limit)
     
 @user_router.put("/{id}", response_model=UserResponse)
 def update_user(id: int, user_data: UserUpdate, db: Session = Depends(get_db)):

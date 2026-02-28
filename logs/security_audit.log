@@ -1,0 +1,1 @@
+2026-02-28 09:26:11 | INFO | User admin@example.com logged in from IP 127.0.0.1 with device info: {'ip': '127.0.0.1', 'is_mobile': 'False', 'is_tablet': 'False', 'is_pc': 'True', 'browser': 'Firefox 147.0', 'browser_version': '147.0', 'os': 'Linux ', 'os_version': '', 'device': 'Other'}

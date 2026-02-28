@@ -31,5 +31,4 @@ class PermissionGuard:
         if current_user.role.name.lower() != "admin":
             raise HTTPException(status_code=403, detail="Admin privileges required")
         return current_user
-      
-PermissionGuard = PermissionGuard()
+
