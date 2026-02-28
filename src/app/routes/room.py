@@ -5,9 +5,9 @@ from ..config.session import get_db
 from ..services.room import RoomService
 from ..schema.query import QueryParameters
 from ..schema.room import RoomUpdate, RoomCreate
+from ..middleware.guard.permission import PermissionGuard 
 
 room_router = APIRouter(prefix="/rooms", tags=["Rooms"])
-
 
 @room_router.post("/")
 def create_room(db: Session = Depends(get_db), data: RoomCreate = Depends()):

@@ -7,8 +7,33 @@ from .app.routes.login import loggin_router
 from .app.routes.room import room_router
 from .app.routes.billing import router as billing_router
 from .app.routes.tanent import tenant_router
+from fastapi.middleware.cors import CORSMiddleware
+from .app.middleware.guard.permission import PermissionGuard
 
 app = FastAPI(title="Room Management API", version="1.0.0")
+
+public_routes = [loggin_router]
+
+
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust this in production to specific domains
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+permission = PermissionGuard.admin_only
+print("Admin-only routes will be protected with PermissionGuard")
+
+# Protect the routes that require admin access
+for router in [user_router, room_router, billing_router, tenant_router]:
+    for route in router.routes:
+        if route not in [r for r in public_routes]:
+            route.dependencies.append(Depends(permission))
+        else:
+            print(f"Route {route} is public and will not be protected with PermissionGuard")
 
 router = APIRouter(prefix="/api/v1")
 app.include_router(prefix=router.prefix, router=loggin_router)

@@ -1,14 +1,12 @@
 from sqlalchemy.orm import Session
-from random import randint
+from datetime import datetime, timedelta
+import random
+from .base import BaseSeeder
+from src.app.model.tenant import Tenant
+from src.app.model.room import Room
 
-class bcolors:
-    OKGREEN = '\033[92m'
-    ENDC = '\033[0m'  
-def seed_tenants(db: Session, rooms: list, num_tenants: int = 20):
-    from ...model.tenant import Tenant
-    from datetime import datetime, timedelta
-    
-    tenant_profiles = [
+class TenantSeeder(BaseSeeder):
+    PROFILES = [
         {"name": "Alice Johnson", "email": "alice.j@email.com", "phone": "012-345-6789", "id_card": "ID001234"},
         {"name": "Bob Smith", "email": "bob.s@email.com", "phone": "012-456-7890", "id_card": "ID002345"},
         {"name": "Charlie Brown", "email": "charlie.b@email.com", "phone": "012-567-8901", "id_card": "ID003456"},
@@ -30,42 +28,44 @@ def seed_tenants(db: Session, rooms: list, num_tenants: int = 20):
         {"name": "Samuel Ho", "email": "samuel.h@email.com", "phone": "012-123-4568", "id_card": "ID019012"},
         {"name": "Tina Zhao", "email": "tina.z@email.com", "phone": "012-234-5679", "id_card": "ID020123"}
     ]
-    
-    # Get occupied rooms (is_available=False)
-    occupied_rooms = [r for r in rooms if not r.is_available]
-    tenants = []
-    
-    for i in range(min(num_tenants, len(tenant_profiles), len(occupied_rooms))):
-        profile = tenant_profiles[i]
-        room = occupied_rooms[i]
+
+    def __init__(self, db: Session, count: int = 20):
+        super().__init__(db, Tenant, count)
+
+    def seed(self, occupied_rooms: list[Room]) -> list[Tenant]:
+        """Seed tenants assigned to occupied rooms"""
+        tenants = []
         
-        # Check if room already has a tenant (1-to-1 relationship)
-        existing_tenant = db.query(Tenant).filter(
-            Tenant.room_id == room.id,
-            Tenant.is_active == True
-        ).first()
+        for i in range(min(self.count, len(self.PROFILES), len(occupied_rooms))):
+            profile = self.PROFILES[i]
+            room = occupied_rooms[i]
+            
+            # Skip if room already has active tenant
+            if self.db.query(Tenant).filter(
+                Tenant.room_id == room.id,
+                Tenant.is_active == True
+            ).first():
+                continue
+            
+            # Random check-in within last 6 months
+            days_ago = random.randint(30, 180)
+            check_in = datetime.utcnow() - timedelta(days=days_ago)
+            
+            tenant = self.create_one(
+                lambda: {
+                    "room_id": room.id,
+                    "name": profile["name"],
+                    "email": profile["email"],
+                    "phone": profile["phone"],
+                    "id_card": profile["id_card"],
+                    "is_active": True,
+                    "check_in_date": check_in,
+                    "check_out_date": None
+                },
+                skip_if_exists=False  # We already checked above
+            )
+            if tenant:
+                tenants.append(tenant)
         
-        if existing_tenant:
-            continue
-        
-        # Random check-in date within last 6 months
-        days_ago = randint(30, 180)
-        check_in = datetime.utcnow() - timedelta(days=days_ago)
-        
-        tenant = Tenant(
-            room_id=room.id,
-            name=profile["name"],
-            email=profile["email"],
-            phone=profile["phone"],
-            id_card=profile["id_card"],
-            is_active=True,
-            check_in_date=check_in,
-            check_out_date=None
-        )
-        tenants.append(tenant)
-    
-    if tenants:
-        db.add_all(tenants)
-        db.flush()
-        print(f"{bcolors.OKGREEN}✓ Created {len(tenants)} active tenants{bcolors.ENDC}")
-    
+        self.log_created("active tenants")
+        return tenants

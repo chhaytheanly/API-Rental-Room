@@ -1,12 +1,9 @@
 from sqlalchemy.orm import Session
-from ...model.room import Room
+from .base import BaseSeeder
+from src.app.model.room import Room
 
-class bcolors:
-    OKGREEN = '\033[92m'
-    ENDC = '\033[0m'  
-
-def seed_rooms(db: Session, num_rooms: int = 20):
-    room_catalog = [
+class RoomSeeder(BaseSeeder):
+    ROOM_CATALOG = [
         {"name": "A01", "desc": "Spacious suite with king bed, balcony, city view", "price": 50},
         {"name": "A02", "desc": "Modern room with queen bed and work desk", "price": 50},
         {"name": "A03", "desc": "Comfortable double room with essential amenities", "price": 50},
@@ -28,22 +25,26 @@ def seed_rooms(db: Session, num_rooms: int = 20):
         {"name": "B09", "desc": "Elegant room with vintage decor", "price": 50},
         {"name": "B10", "desc": "Cozy room with modern decor", "price": 50}
     ]
-    
-    rooms = []
-    for i in range(min(num_rooms, len(room_catalog))):
-        room_data = room_catalog[i]
+
+    def __init__(self, db: Session, count: int = 20):
+        super().__init__(db, Room, count)
+
+    def seed(self) -> list[Room]:
+        """Seed rooms from catalog"""
+        rooms = []
+        for i in range(min(self.count, len(self.ROOM_CATALOG))):
+            data = self.ROOM_CATALOG[i]
+            if not self.exists(name=data["name"]):
+                room = self.create_one(
+                    lambda: {
+                        "name": data["name"],
+                        "description": data["desc"],
+                        "price": data["price"],
+                        "is_available": False  # Mark as occupied for tenant seeding
+                    },
+                )
+                if room:
+                    rooms.append(room)
         
-        if db.query(Room).filter(Room.name == room_data["name"]).count() == 0:
-            room = Room(
-                name=room_data["name"],
-                description=room_data["desc"],
-                price=room_data["price"],
-                is_available=False
-            )
-            rooms.append(room)
-    
-    if rooms:
-        db.add_all(rooms)
-        db.flush()  # Get IDs without committing yet
-        print(f"{bcolors.OKGREEN}✓ Created {len(rooms)} rooms{bcolors.ENDC}")
-    
+        self.log_created("rooms")
+        return rooms
