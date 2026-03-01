@@ -55,24 +55,23 @@ class UserService:
         }
     
     @staticmethod
-    def create_user(db: Session, data: UserCreate) -> UserResponse:
-        # Check the existing Users
+    def create_user(db: Session, data, image: Optional[UploadFile]) -> UserResponse:
         existing_user = db.query(User).filter(User.email == data.email).first()
         if existing_user:
             raise ValueError("Email already exists")
-        
-        # Check if the Role exists or seed role first
+
         role = db.query(Role).filter(Role.id == data.role_id).first()
         if not role:
             raise ValueError("Role not found")
         
         if data.password:
-            # Hash the password before storing it in the database
             data.password = hash_password(data.password)
         else:
             raise ValueError("Password is required")
         
-        # Image is now Base64 string, no processing needed
+        if image:
+            data.image = get_image(image)
+
         user = User(**data.dict())
         db.add(user)
         db.commit()
@@ -109,29 +108,40 @@ class UserService:
         }
             
     @staticmethod
-    def update_user(db: Session, id: int, data: UserUpdate):
+    def update_user(db: Session, id: int, data, image: Optional[UploadFile] = None) -> UserResponse:
         user = db.query(User).filter(User.id == id).first()
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise ValueError("User not found")
         
+        if data.email and data.email != user.email:
+            existing_user = db.query(User).filter(User.email == data.email).first()
+            if existing_user:
+                raise ValueError("Email already exists")
+        
+        if data.role_id and data.role_id != user.role_id:
+            role = db.query(Role).filter(Role.id == data.role_id).first()
+            if not role:
+                raise ValueError("Role not found")
+        
+        # Hash password if provided
         if data.password:
-            # Hash the password before storing it in the database
             data.password = hash_password(data.password)
+        
+        # Handle image file upload separately
+        if image:
+            image_path = get_image(image)
+            setattr(user, 'image', image_path)
 
-        update_data = data.dict(exclude_unset=True)
-
+        # Update only provided fields, excluding None values
+        update_data = data.dict(exclude_unset=True, exclude_none=True)
         for key, value in update_data.items():
             setattr(user, key, value)
-            
-        # check if not successfully role back
-        if not user:
-            db.rollback()
-            raise HTTPException(status_code=400, detail="Failed to update user")
         
         db.commit()
         db.refresh(user)
-        return UserResponse.model_validate(user)
-    
+
+        return UserResponse.model_validate(user) 
+
     @staticmethod
     def delete_user(db: Session, id: int):
         user = db.query(User).filter(User.id == id).first()
