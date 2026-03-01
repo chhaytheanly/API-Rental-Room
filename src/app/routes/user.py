@@ -20,6 +20,38 @@ User Routes:
 
 """
 
+"""
+If you don't want to handle the FormData, You can use Base64 encoding for the image and send it as a string in the JSON body.
+
+Example of UserCreate with Base64 image:
+
+    @staticmethod
+    def create_user(db: Session, data: UserCreate) -> UserResponse:
+        # Check the existing Users
+        existing_user = db.query(User).filter(User.email == data.email).first()
+        if existing_user:
+            raise ValueError("Email already exists")
+        
+        # Check if the Role exists or seed role first
+        role = db.query(Role).filter(Role.id == data.role_id).first()
+        if not role:
+            raise ValueError("Role not found")
+        
+        if data.password:
+            # Hash the password before storing it in the database
+            data.password = hash_password(data.password)
+        else:
+            raise ValueError("Password is required")
+        
+        # Image is now Base64 string, no processing needed
+        user = User(**data.dict())
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        return UserResponse.model_validate(user)
+"""
+
 @user_router.post("", response_model=UserResponse, dependencies=[Depends(PermissionGuard.admin_only)])
 def create_user(
     name: str = Form(...),
@@ -29,7 +61,6 @@ def create_user(
     image: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
 ):
-    # Handle UploadFile and save to disk
     return UserService.create_user(db, UserCreate(name=name, email=email, password=password, role_id=role_id), image)
     
 @user_router.get("/setup-form")

@@ -187,20 +187,52 @@ class RoomService:
         if not room:
             raise ValueError("Room not found")
         
+        # Check if any tenant (active or inactive) is currently linked to this room
+        conflicting_tenant = db.query(Tenant).filter(
+            Tenant.room_id == room_id
+        ).first()
+        
+        if conflicting_tenant:
+            if conflicting_tenant.is_active:
+                raise ValueError(f"Room is already occupied by active tenant: {conflicting_tenant.name} (ID: {conflicting_tenant.id})")
+            else:
+                # Clear the inactive tenant's room_id to resolve conflict
+                conflicting_tenant.room_id = None
+                db.flush()
+        
         if not room.is_available:
-            raise ValueError("Room is already occupied")
+            # Double check - if room says not available but no active tenant, fix it
+            active_tenant = db.query(Tenant).filter(
+                Tenant.room_id == room_id,
+                Tenant.is_active == True
+            ).first()
+            if not active_tenant:
+                room.is_available = True
+            else:
+                raise ValueError(f"Room is already occupied by: {active_tenant.name}")
 
         tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
         if not tenant:
             raise ValueError("Tenant not found")
 
+        # Check if tenant is already in another room
+        if tenant.room_id is not None and tenant.is_active:
+            raise ValueError(f"Tenant is already assigned to room {tenant.room_id}. Remove them first.")
+        
+        # Clear any old room assignment
         if tenant.room_id is not None:
-            raise ValueError("Tenant is already assigned to a room")
+            tenant.room_id = None
 
         tenant.room_id = room_id
         tenant.is_active = True
         tenant.check_in_date = datetime.now(timezone.utc)
         tenant.updated_at = datetime.now(timezone.utc)
+        
+        room.is_available = False
+        room.updated_at = datetime.now(timezone.utc)
+        
+        # Flush changes to database before generating invoice
+        db.flush()
         
         from datetime import date
         current_month = date.today().replace(day=1)
@@ -214,14 +246,11 @@ class RoomService:
             is_first_invoice=True,
             check_in_date=check_in_date_value
         )
-        
-        room.is_available = False
-        room.updated_at = datetime.now(timezone.utc)
 
         return tenant
     
     @staticmethod
-    def get_room_payment_history(db: Session, room_id: int, months: int = 6) -> Dict[str, Any]:
+    def get_room_payment_history(db: Session, room_id: int, months: int) -> Dict[str, Any]:
         """Get payment history for a room (last N months)"""
         room = db.query(Room).filter(Room.id == room_id).first()
         if not room:

@@ -9,16 +9,6 @@ class UserCreate(BaseModel):
     role_id: int
     image: Optional[str] = None
 
-    @classmethod
-    def as_form(
-        cls,
-        name: str = Form(...),
-        email: str = Form(...),
-        password: str = Form(...),
-        role_id: int = Form(...),
-        image: Optional[str] = Form(None),
-    ):
-        return cls(name=name, email=email, password=password, role_id=role_id, image=image)
     
 class UserUpdate(BaseModel):
     name: Optional[str] = None
@@ -27,16 +17,6 @@ class UserUpdate(BaseModel):
     role_id: Optional[int] = None    
     image: Optional[str] = None
 
-    @classmethod
-    def as_form(
-        cls,
-        name: Optional[str] = Form(None),
-        email: Optional[str] = Form(None),
-        password: Optional[str] = Form(None),
-        role_id: Optional[int] = Form(None),
-        image: Optional[str] = Form(None),
-    ):
-        return cls(name=name, email=email, password=password, role_id=role_id, image=image)
 
 class RoleNested(BaseModel):
     id: int
