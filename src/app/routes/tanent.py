@@ -9,7 +9,7 @@ from ..services.tenant import TenantService
 
 tenant_router = APIRouter(prefix="/tenants", tags=["Tenants"])
 @tenant_router.post("/")
-def create_tenant(db: Session = Depends(get_db), data: TenantCreate = Depends()):
+def create_tenant(data: TenantCreate, db: Session = Depends(get_db)):
     try:
         tenant = TenantService.create_tenant(db, data)
         db.commit()

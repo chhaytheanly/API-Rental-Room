@@ -7,6 +7,7 @@ from .app.routes.login import loggin_router
 from .app.routes.room import room_router
 from .app.routes.billing import router as billing_router
 from .app.routes.tanent import tenant_router
+from .app.routes.invoice import invoice_router
 from fastapi.middleware.cors import CORSMiddleware
 from .app.middleware.guard.permission import PermissionGuard
 
@@ -41,6 +42,7 @@ app.include_router(prefix=router.prefix, router=user_router)
 app.include_router(prefix=router.prefix, router=room_router)
 app.include_router(prefix=router.prefix, router=billing_router)
 app.include_router(prefix=router.prefix, router=tenant_router)
+app.include_router(prefix=router.prefix, router=invoice_router)
 
 # Serve static files from the "uploads" directory
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

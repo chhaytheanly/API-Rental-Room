@@ -96,13 +96,20 @@ class TenantService:
         if not tenant:
             raise ValueError("Tenant not found")
         
+        # Get room_id before clearing it
+        room_id = tenant.room_id
+        
+        # Clear tenant's room assignment
+        tenant.room_id = None  # Important: Clear the room_id to allow new tenant assignment
         tenant.is_active = False
         tenant.check_out_date = datetime.now(timezone.utc)
         tenant.updated_at = datetime.now(timezone.utc)
         
-        room = db.query(Room).filter(Room.id == tenant.room_id).first()
-        if room:
-            room.is_available = True
-            room.updated_at = datetime.now(timezone.utc)
+        # Make room available
+        if room_id:
+            room = db.query(Room).filter(Room.id == room_id).first()
+            if room:
+                room.is_available = True
+                room.updated_at = datetime.now(timezone.utc)
 
         return tenant
