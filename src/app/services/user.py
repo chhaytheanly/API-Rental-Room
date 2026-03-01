@@ -21,7 +21,41 @@ class UserService:
         return UserResponse.model_validate(user)
     
     @staticmethod
-    def create_user(db: Session, data: UserCreate, image: Optional[UploadFile] = None) -> UserResponse:
+    def setup_form(db: Session):
+        roles = db.query(Role).all()
+
+        role_options = [
+            {"value": role.id, "label": role.name}
+            for role in roles   
+        ]
+        return {
+            "roles": [
+                {"value": role.id, "label": role.name}
+                for role in roles
+            ],
+            "fields": {
+                "email": {
+                    "type": "string",
+                    "required": True
+                },
+                "password": {
+                    "type": "password",
+                    "required": True
+                },
+                "role_id": {
+                    "type": "select",
+                    "role": role_options,
+                    "required": True
+                },
+                "image": {
+                    "type": "file",
+                    "required": False
+                }
+            }
+        }
+    
+    @staticmethod
+    def create_user(db: Session, data: UserCreate) -> UserResponse:
         # Check the existing Users
         existing_user = db.query(User).filter(User.email == data.email).first()
         if existing_user:
@@ -37,10 +71,8 @@ class UserService:
             data.password = hash_password(data.password)
         else:
             raise ValueError("Password is required")
-
-        if image:
-            data.image = get_image(image)
-            
+        
+        # Image is now Base64 string, no processing needed
         user = User(**data.dict())
         db.add(user)
         db.commit()
@@ -98,7 +130,7 @@ class UserService:
         
         db.commit()
         db.refresh(user)
-        return user
+        return UserResponse.model_validate(user)
     
     @staticmethod
     def delete_user(db: Session, id: int):
