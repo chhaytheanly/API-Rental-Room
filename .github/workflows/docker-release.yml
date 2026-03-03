@@ -22,7 +22,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./docker
-          file: ./docker/Dockerfile
+          context: .
           push: true
           tags: chhaytheanly/rental-api:${{ github.ref_name }}
