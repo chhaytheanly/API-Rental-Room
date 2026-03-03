@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional
+from typing import Optional, List
 from datetime import date, datetime
 from enum import Enum
 
@@ -15,8 +15,6 @@ class PaymentStatus(str, Enum):
     pending = "pending"
     failed = "failed"
 
-
-# ===== REQUEST SCHEMAS =====
 
 class InvoiceCreate(BaseModel):
     tenant_id: int = Field(..., gt=0)
@@ -39,20 +37,8 @@ class InvoiceCreate(BaseModel):
 
 class PaymentCreate(BaseModel):
     amount: float = Field(..., gt=0)
-    image: Optional[str] = None  # URL or base64 of receipt
+    image: Optional[str] = None 
 
-
-class InvoiceFilterParams(BaseModel):
-    page: int = Field(1, ge=1)
-    limit: int = Field(10, ge=1, le=100)
-    status: Optional[InvoiceStatus] = None
-    month: Optional[int] = Field(None, ge=1, le=12)
-    year: Optional[int] = Field(None, ge=2000)
-    tenant_id: Optional[int] = None
-    room_id: Optional[int] = None
-
-
-# ===== RESPONSE SCHEMAS =====
 
 class TenantSummary(BaseModel):
     id: int
@@ -105,10 +91,7 @@ class PaymentResponse(BaseModel):
     
     class Config:
         from_attributes = True
-
-from pydantic import BaseModel
-from typing import List, Optional
-
+        
 class MetaResponse(BaseModel):
     page: int
     limit: int

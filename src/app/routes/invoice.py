@@ -192,9 +192,6 @@ def get_late_payers(
     return InvoiceService.get_late_payers(db, month, year)
 
 
-# ===============================
-# GET SINGLE INVOICE (MOVED TO BOTTOM)
-# ===============================
 @invoice_router.get("/{invoice_id}", response_model=InvoiceResponse)
 def get_invoice(invoice_id: int, db: Session = Depends(get_db)):
     try:
