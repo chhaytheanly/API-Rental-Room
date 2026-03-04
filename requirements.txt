@@ -33,6 +33,3 @@ typing-inspection==0.4.2
 tzlocal==5.3.1
 uvicorn==0.41.0
 user-agents==2.2.0
-watchtower==4.0.0
-websockets==11.0.3
-Werkzeug==2.3.4
