@@ -1,3 +1,4 @@
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from .app.config.session import get_db
 from fastapi import APIRouter, Depends, FastAPI
@@ -47,6 +48,12 @@ app.include_router(prefix=router.prefix, router=invoice_router)
 # Serve static files from the "uploads" directory
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+@app.get("/", response_class=HTMLResponse)
+def home():
+    html_path = "src/index.html"
+    with open(html_path, "r") as f:
+        html_content = f.read()
+    return HTMLResponse(content=html_content, status_code=200)
 
 @app.on_event("startup")
 def on_startup():

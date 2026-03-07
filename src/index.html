@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API</title>
+    <link rel="icon" type="image/x-icon" href="/src/public/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap" rel="stylesheet">
+
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Onest', Arial, Helvetica, sans-serif;
+        background: #f4f6f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        text-align: center;
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+      }
+
+      h1 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+
+      .status {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+        margin-top: 10px;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        background: #2ecc71;
+        border-radius: 50%;
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      img {
+        width: 100%;
+        border-radius: 10px;
+        margin-top: 20px;
+      }
+
+      .footer {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #7f8c8d;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Rental Room Management API</h1>
+
+      <div class="status">
+        <div class="dot"></div>
+        <span>FastAPI Server is Running</span>
+      </div>
+
+      <p>Your backend service is successfully deployed.</p>
+
+      <a href="/docs" target="_blank">Open Swagger UI</a>
+
+      <!-- <img
+        src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2"
+        alt="Rental Room System"
+      /> -->
+
+      <div class="footer">
+        <p>Made with love ❤️💕 By Eugene</p>
+      </div>
+    </div>
+  </body>
+</html>
