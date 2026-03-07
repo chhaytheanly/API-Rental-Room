@@ -47,11 +47,12 @@ app.include_router(prefix=router.prefix, router=invoice_router)
 
 # Serve static files from the "uploads" directory
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/public", StaticFiles(directory="src/public"), name="public" )
 
 @app.get("/", response_class=HTMLResponse)
 def home():
     html_path = "src/index.html"
-    with open(html_path, "r") as f:
+    with open(html_path, "r", encoding="utf-8", errors="replace") as f:
         html_content = f.read()
     return HTMLResponse(content=html_content, status_code=200)
 
