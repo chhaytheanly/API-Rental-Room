@@ -44,16 +44,16 @@ A RESTful API for managing rental properties — rooms, tenants, invoices, and p
 
 ## Tech Stack
 
-| Layer        | Technology                      |
-|--------------|---------------------------------|
-| Framework    | FastAPI 0.133                   |
-| ORM          | SQLAlchemy 2.0                  |
-| Database     | PostgreSQL 16                   |
-| Migrations   | Alembic                         |
-| Auth         | python-jose (JWT), argon2-cffi  |
-| Scheduler    | APScheduler 3.11                |
-| Server       | Uvicorn                         |
-| Containerization | Docker Compose              |
+| Layer            | Technology                     |
+| ---------------- | ------------------------------ |
+| Framework        | FastAPI 0.133                  |
+| ORM              | SQLAlchemy 2.0                 |
+| Database         | PostgreSQL 16                  |
+| Migrations       | Alembic                        |
+| Auth             | python-jose (JWT), argon2-cffi |
+| Scheduler        | APScheduler 3.11               |
+| Server           | Uvicorn                        |
+| Containerization | Docker Compose                 |
 
 ---
 
@@ -108,7 +108,7 @@ A RESTful API for managing rental properties — rooms, tenants, invoices, and p
 Create a `.env` file in the project root:
 
 ```env
-DATABASE_URL=postgresql://postgres:admin2026@localhost:5432/db_room
+DATABASE_URL=postgresql+psycopg2://postgres:admin2026@localhost:5432/db_room
 SECRET_KEY=your_secret_key_here
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
@@ -120,18 +120,73 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 
 Start PostgreSQL and pgAdmin with Docker Compose:
 
+Create a `docker-compose.yml` file in the project root:
+
+```docker-compose.yml
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: db_room
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - rental_room
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: your_password
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    networks:
+      - rental_room
+
+volumes:
+  postgres:
+  pgadmin:
+
+networks:
+  rental_room:
+    driver: bridge
+
+```
+
+after creating the file, run this:
+
 ```bash
 docker compose up -d
 ```
 
-| Service  | URL                        | Credentials                     |
-|----------|----------------------------|----------------------------------|
-| Postgres | `localhost:5432`           | `postgres` / `admin2026`         |
-| pgAdmin  | http://localhost:5050      | `admin@gmail.com` / `admin2026`  |
+| Service  | URL                   | Credentials                     |
+| -------- | --------------------- | ------------------------------- |
+| Postgres | `localhost:5432`      | `postgres` / `admin2026`        |
+| pgAdmin  | http://localhost:5050 | `admin@gmail.com` / `admin2026` |
 
 ---
 
 ### Install Dependencies
+
+If you want to use uv, Run this:
+
+```bash
+uv sync
+```
 
 ```bash
 python -m venv .venv
@@ -142,6 +197,20 @@ pip install -r requirements.txt
 ---
 
 ### Run Migrations
+
+First, After cloning this project, You will need to remove the alembic, Run this:
+
+```bash
+rm -rf alembic/
+```
+
+then start fresh:
+
+```bash
+alembic init alembic
+```
+
+Right after init run this command to generate the database in postgres by sqlalchemy:
 
 ```bash
 alembic upgrade head
@@ -191,12 +260,12 @@ python -m src.app.database.index --dry-run
 
 **Seeded accounts:**
 
-| Role  | Email                  | Password   |
-|-------|------------------------|------------|
-| Admin | admin@example.com      | admin123   |
-| Staff | john@rental.com        | staff123   |
-| Staff | emma@rental.com        | staff123   |
-| Staff | mike@rental.com        | staff123   |
+| Role  | Email             | Password |
+| ----- | ----------------- | -------- |
+| Admin | admin@example.com | admin123 |
+| Staff | john@rental.com   | staff123 |
+| Staff | emma@rental.com   | staff123 |
+| Staff | mike@rental.com   | staff123 |
 
 ---
 
@@ -233,6 +302,7 @@ Authorization: Bearer <access_token>
 Login with email and password. Returns a JWT access token.
 
 **Request body:**
+
 ```json
 {
   "email": "admin@example.com",
@@ -241,6 +311,7 @@ Login with email and password. Returns a JWT access token.
 ```
 
 **Response:**
+
 ```json
 {
   "access_token": "<jwt_token>",
@@ -259,19 +330,21 @@ Login with email and password. Returns a JWT access token.
 
 > All user routes are protected (Admin only), except `GET /users/{id}` and `GET /users/`.
 
-| Method | Endpoint          | Description             | Auth Required |
-|--------|-------------------|-------------------------|---------------|
-| POST   | `/users`          | Create a new user       | Admin         |
-| GET    | `/users/`         | List all users (paged)  | Yes           |
-| GET    | `/users/{id}`     | Get user by ID          | Yes           |
-| PUT    | `/users/{id}`     | Update user             | Yes           |
-| DELETE | `/users/{id}`     | Delete user             | Yes           |
+| Method | Endpoint      | Description            | Auth Required |
+| ------ | ------------- | ---------------------- | ------------- |
+| POST   | `/users`      | Create a new user      | Admin         |
+| GET    | `/users/`     | List all users (paged) | Yes           |
+| GET    | `/users/{id}` | Get user by ID         | Yes           |
+| PUT    | `/users/{id}` | Update user            | Yes           |
+| DELETE | `/users/{id}` | Delete user            | Yes           |
 
 **Query params for `GET /users/`:**
+
 - `page` (int, default: 1)
 - `limit` (int, default: 10)
 
 **Create user** — multipart form with optional image upload:
+
 ```
 name, email, password, role_id, image (file, optional)
 ```
@@ -280,28 +353,31 @@ name, email, password, role_id, image (file, optional)
 
 ### Rooms
 
-| Method | Endpoint                     | Description                          |
-|--------|------------------------------|--------------------------------------|
-| POST   | `/rooms/`                    | Create a new room                    |
-| GET    | `/rooms/`                    | List all rooms (with query filters)  |
-| GET    | `/rooms/{room_id}`           | Get room by ID                       |
-| PUT    | `/rooms/{room_id}`           | Update room details                  |
-| DELETE | `/rooms/{room_id}`           | Delete room                          |
-| POST   | `/rooms/{room_id}/assign`    | Assign a tenant to a room            |
-| POST   | `/rooms/{room_id}/pay`       | Record a payment for an invoice      |
-| GET    | `/rooms/reports/monthly`     | Monthly payment report               |
+| Method | Endpoint                  | Description                         |
+| ------ | ------------------------- | ----------------------------------- |
+| POST   | `/rooms/`                 | Create a new room                   |
+| GET    | `/rooms/`                 | List all rooms (with query filters) |
+| GET    | `/rooms/{room_id}`        | Get room by ID                      |
+| PUT    | `/rooms/{room_id}`        | Update room details                 |
+| DELETE | `/rooms/{room_id}`        | Delete room                         |
+| POST   | `/rooms/{room_id}/assign` | Assign a tenant to a room           |
+| POST   | `/rooms/{room_id}/pay`    | Record a payment for an invoice     |
+| GET    | `/rooms/reports/monthly`  | Monthly payment report              |
 
 **Assign tenant:**
+
 ```
 POST /rooms/{room_id}/assign?tenant_id={tenant_id}
 ```
 
 **Record payment:**
+
 ```
 POST /rooms/{room_id}/pay?invoice_id={invoice_id}&amount={amount}
 ```
 
 **Monthly report:**
+
 ```
 GET /rooms/reports/monthly?month=2&year=2026
 ```
@@ -310,14 +386,15 @@ GET /rooms/reports/monthly?month=2&year=2026
 
 ### Tenants
 
-| Method | Endpoint               | Description             |
-|--------|------------------------|-------------------------|
-| POST   | `/tenants/`            | Create a new tenant     |
-| GET    | `/tenants/`            | List all tenants        |
-| GET    | `/tenants/{tenant_id}` | Get tenant by ID        |
+| Method | Endpoint               | Description               |
+| ------ | ---------------------- | ------------------------- |
+| POST   | `/tenants/`            | Create a new tenant       |
+| GET    | `/tenants/`            | List all tenants          |
+| GET    | `/tenants/{tenant_id}` | Get tenant by ID          |
 | DELETE | `/tenants/{tenant_id}` | Remove / check out tenant |
 
 **Create tenant body:**
+
 ```json
 {
   "name": "Jane Doe",
@@ -333,7 +410,7 @@ GET /rooms/reports/monthly?month=2&year=2026
 ### Billing
 
 | Method | Endpoint                     | Description                                 |
-|--------|------------------------------|---------------------------------------------|
+| ------ | ---------------------------- | ------------------------------------------- |
 | POST   | `/billing/trigger-monthly`   | Manually trigger monthly invoice generation |
 | POST   | `/billing/trigger-late-fees` | Manually trigger late-fee processing        |
 | GET    | `/billing/scheduler-status`  | Get APScheduler status and job list         |
@@ -343,53 +420,57 @@ GET /rooms/reports/monthly?month=2&year=2026
 ## Data Models
 
 ### User
-| Column    | Type    | Notes                        |
-|-----------|---------|------------------------------|
-| id        | Integer | Primary key                  |
-| name      | String  |                              |
-| email     | String  | Unique                       |
-| password  | String  | Argon2 hashed                |
-| image     | String  | File path (optional)         |
-| role_id   | Integer | FK → roles.id                |
+
+| Column   | Type    | Notes                |
+| -------- | ------- | -------------------- |
+| id       | Integer | Primary key          |
+| name     | String  |                      |
+| email    | String  | Unique               |
+| password | String  | Argon2 hashed        |
+| image    | String  | File path (optional) |
+| role_id  | Integer | FK → roles.id        |
 
 ### Room
-| Column       | Type    | Notes                      |
-|--------------|---------|----------------------------|
-| id           | Integer | Primary key                |
-| name         | String  |                            |
-| description  | String  | Optional                   |
-| price        | Float   | Monthly rent               |
-| is_available | Boolean | True = vacant              |
-| updated_at   | DateTime|                            |
+
+| Column       | Type     | Notes         |
+| ------------ | -------- | ------------- |
+| id           | Integer  | Primary key   |
+| name         | String   |               |
+| description  | String   | Optional      |
+| price        | Float    | Monthly rent  |
+| is_available | Boolean  | True = vacant |
+| updated_at   | DateTime |               |
 
 ### Tenant
-| Column          | Type     | Notes                     |
-|-----------------|----------|---------------------------|
-| id              | Integer  | Primary key               |
-| room_id         | Integer  | FK → rooms.id (unique)    |
-| name            | String   |                           |
-| email           | String   | Optional                  |
-| phone           | String   | Optional                  |
-| id_card         | String   | Optional                  |
-| photo           | String   | Optional                  |
-| is_active       | Boolean  | False = checked out       |
-| check_in_date   | DateTime |                           |
-| check_out_date  | DateTime | Optional                  |
+
+| Column         | Type     | Notes                  |
+| -------------- | -------- | ---------------------- |
+| id             | Integer  | Primary key            |
+| room_id        | Integer  | FK → rooms.id (unique) |
+| name           | String   |                        |
+| email          | String   | Optional               |
+| phone          | String   | Optional               |
+| id_card        | String   | Optional               |
+| photo          | String   | Optional               |
+| is_active      | Boolean  | False = checked out    |
+| check_in_date  | DateTime |                        |
+| check_out_date | DateTime | Optional               |
 
 ### Invoice
-| Column      | Type          | Notes                               |
-|-------------|---------------|-------------------------------------|
-| id          | Integer       | Primary key                         |
-| room_id     | Integer       | FK → rooms.id                       |
-| tenant_id   | Integer       | FK → tenants.id                     |
-| month       | Integer       | 1–12                                |
-| year        | Integer       |                                     |
-| amount      | Float         | Total due                           |
-| amount_paid | Float         | Amount paid so far                  |
-| due_date    | Date          |                                     |
-| status      | Enum          | `pending` \| `paid` \| `late`       |
-| created_at  | DateTime      |                                     |
-| paid_at     | DateTime      | Optional, set when fully paid       |
+
+| Column      | Type     | Notes                         |
+| ----------- | -------- | ----------------------------- |
+| id          | Integer  | Primary key                   |
+| room_id     | Integer  | FK → rooms.id                 |
+| tenant_id   | Integer  | FK → tenants.id               |
+| month       | Integer  | 1–12                          |
+| year        | Integer  |                               |
+| amount      | Float    | Total due                     |
+| amount_paid | Float    | Amount paid so far            |
+| due_date    | Date     |                               |
+| status      | Enum     | `pending` \| `paid` \| `late` |
+| created_at  | DateTime |                               |
+| paid_at     | DateTime | Optional, set when fully paid |
 
 ---
 
@@ -397,10 +478,10 @@ GET /rooms/reports/monthly?month=2&year=2026
 
 APScheduler runs automatically on server startup with two background jobs:
 
-| Job                    | Schedule              | Description                                        |
-|------------------------|-----------------------|----------------------------------------------------|
-| `monthly_billing`      | 1st of month, 2:00 AM | Generates invoices for all active tenants/rooms    |
-| `daily_late_fees`      | Every day, 3:00 AM    | Marks overdue invoices as `late` and applies fees  |
+| Job               | Schedule              | Description                                       |
+| ----------------- | --------------------- | ------------------------------------------------- |
+| `monthly_billing` | 1st of month, 2:00 AM | Generates invoices for all active tenants/rooms   |
+| `daily_late_fees` | Every day, 3:00 AM    | Marks overdue invoices as `late` and applies fees |
 
 Both jobs can also be triggered manually via the [Billing endpoints](#billing).
 
@@ -411,12 +492,15 @@ Both jobs can also be triggered manually via the [Billing endpoints](#billing).
 Routes are protected using `PermissionGuard.admin_only`, which validates the JWT from the `Authorization: Bearer` header and checks the user's role.
 
 **Public routes** (no token required):
+
 - `POST /api/v1/login`
 
 **Protected routes** (token required):
+
 - All `/users`, `/rooms`, `/tenants`, `/billing` endpoints.
 
 Token payload structure:
+
 ```json
 {
   "sub": "<user_id>",
