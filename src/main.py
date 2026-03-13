@@ -1,16 +1,18 @@
+from fastapi import APIRouter, Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from .app.config.session import get_db
-from fastapi import APIRouter, Depends, FastAPI
-from .app.config.scheduler import init_scheduler, shutdown_scheduler
-from .app.routes.user import user_router
-from .app.routes.login import loggin_router
-from .app.routes.room import room_router
-from .app.routes.billing import router as billing_router
-from .app.routes.tanent import tenant_router
-from .app.routes.invoice import invoice_router
-from fastapi.middleware.cors import CORSMiddleware
-from .app.middleware.guard.permission import PermissionGuard
+
+from .app.config import get_db, init_scheduler, shutdown_scheduler
+from .app.routes import (
+    billing_router,
+    invoice_router,
+    loggin_router,
+    room_router,
+    tenant_router,
+    user_router,
+)
+from .app.middleware.guard import PermissionGuard
 
 app = FastAPI(title="Room Management API", version="1.0.0")
 

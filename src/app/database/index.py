@@ -12,14 +12,14 @@ import sys
 import argparse
 from pathlib import Path
 
-# Add project root to path
+# Ensure project root is in path for standalone execution
 project_root = Path(__file__).resolve().parents[3]
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from src.app.config.session import local_session
+from src.app.config import local_session
 from src.app.database.seed.seeder import DatabaseSeeder
-from src.app.utils.color import Colors
+from src.app.utils import Colors
 
 
 def parse_args():

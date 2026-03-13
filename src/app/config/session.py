@@ -5,7 +5,7 @@ from .config import settings
 # In production, Turn Echo off
 engine = create_engine(
     settings.DATABASE_URL,
-    echo=True,
+    echo=False,
     pool_pre_ping=True,
     connect_args={"options": "-csearch_path=public"},
 )
