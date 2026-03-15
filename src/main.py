@@ -3,8 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from .app.config import get_db, init_scheduler, shutdown_scheduler
-from .app.routes import (
+from src.app.config import get_db, init_scheduler, shutdown_scheduler
+from src.app.middleware.guard import PermissionGuard
+from src.app.routes import (
     billing_router,
     invoice_router,
     loggin_router,
@@ -12,7 +13,6 @@ from .app.routes import (
     tenant_router,
     user_router,
 )
-from .app.middleware.guard import PermissionGuard
 
 app = FastAPI(title="Room Management API", version="1.0.0")
 

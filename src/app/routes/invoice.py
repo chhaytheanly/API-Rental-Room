@@ -1,11 +1,12 @@
+from datetime import date
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, selectinload
-from typing import Optional
-from datetime import date
 
-from ..config.session import get_db
-from ..services.invoice import InvoiceService
-from ..schema.invoice import (
+from src.app.config.session import get_db
+from src.app.model.invoice import Invoice
+from src.app.schema.invoice import (
     InvoiceCreate,
     InvoiceResponse,
     PaymentCreate,
@@ -14,7 +15,7 @@ from ..schema.invoice import (
     GenerateAllRequest,
     ApplyLateFeesRequest,
 )
-from ..model.invoice import Invoice
+from src.app.services.invoice import InvoiceService
 
 invoice_router = APIRouter(prefix="/invoices", tags=["Invoices"])
 

@@ -1,6 +1,7 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import text
-from ...utils.color import Colors
+from sqlalchemy.orm import Session
+
+from src.app.utils.color import Colors
 
 def clear_all_data(db: Session, tables: list[str] = None):
     """

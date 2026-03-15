@@ -1,12 +1,12 @@
-from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
-from ...services.user import UserService
-from ...config.session import get_db 
-from ...services.user import UserService
-from ..jwt_service import JWTService
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
+from fastapi import Depends, HTTPException
 import os
+from sqlalchemy.orm import Session
+
+from src.app.config.session import get_db
+from src.app.middleware.jwt_service import JWTService
+from src.app.services.user import UserService
 
 load_dotenv()
 

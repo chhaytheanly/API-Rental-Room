@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from ..model.tenant import Tenant
-from ..schema.tenant import TenantCreate
-from ..config.session import get_db    
-from ..schema.query import QueryParameters
-from ..services.tenant import TenantService
+from src.app.config.session import get_db
+from src.app.schema.query import QueryParameters
+from src.app.schema.tenant import TenantCreate
+from src.app.services.tenant import TenantService
 
 tenant_router = APIRouter(prefix="/tenants", tags=["Tenants"])
 @tenant_router.post("/")

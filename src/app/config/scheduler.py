@@ -12,7 +12,7 @@ def init_scheduler():
     Initialize and start the APScheduler
     Call this in FastAPI startup event
     """
-    from ..services.task import run_monthly_billing, run_daily_late_fees
+    from src.app.services.task import run_daily_late_fees, run_monthly_billing
 
     if scheduler.running:
         return

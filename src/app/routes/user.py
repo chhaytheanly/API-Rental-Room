@@ -1,11 +1,12 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Form, HTTPException, File, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
-from ..middleware.guard.permission import PermissionGuard
-from ..config.session import get_db
-from ..services.user import UserService
-from ..schema.user import UserCreate, UserUpdate, UserResponse
+
+from src.app.config.session import get_db
+from src.app.middleware.guard.permission import PermissionGuard
+from src.app.schema.user import UserCreate, UserResponse, UserUpdate
+from src.app.services.user import UserService
 
 user_router = APIRouter(prefix="/users", tags=["Users"])
 

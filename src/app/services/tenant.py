@@ -1,11 +1,13 @@
-from sqlalchemy.orm import Session, selectinload
-from ..model.invoice import Invoice
-from ..model.tenant import Tenant
-from ..schema.tenant import TenantCreate
-from ..model.room import Room
 from datetime import datetime, timezone
+
 from sqlalchemy import or_
-from ..schema.query import QueryParameters
+from sqlalchemy.orm import Session, selectinload
+
+from src.app.model.invoice import Invoice
+from src.app.model.room import Room
+from src.app.model.tenant import Tenant
+from src.app.schema.query import QueryParameters
+from src.app.schema.tenant import TenantCreate
 
 class TenantService:
     @staticmethod

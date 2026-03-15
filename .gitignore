@@ -8,8 +8,6 @@ __pycache__/
 *.pyc
 
 .env
-alembic.ini
-alembic/versions/
 docker-compose.yml
 
 uploads/

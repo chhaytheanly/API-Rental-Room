@@ -18,7 +18,7 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 from src.app.config import local_session
-from src.app.database.seed.seeder import DatabaseSeeder
+from src.app.database.seed import DatabaseSeeder
 from src.app.utils import Colors
 
 

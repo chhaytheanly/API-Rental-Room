@@ -2,7 +2,8 @@ from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey, Enu
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
-from ..config.base import Base
+
+from src.app.config.base import Base
 
 class PaymentStatus(str, enum.Enum):
     completed = "completed"

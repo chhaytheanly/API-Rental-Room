@@ -1,10 +1,12 @@
 # schemas/room.py
-from pydantic import BaseModel, Field
-from typing import Optional, List
 from datetime import date, datetime
 from enum import Enum
-from .query import QueryParameters
-from .payment import PaymentStatus
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
+
+from src.app.schema.payment import PaymentStatus
+from src.app.schema.query import QueryParameters
 
 # ==================== Enums ====================
 

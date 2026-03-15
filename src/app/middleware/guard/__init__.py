@@ -1,1 +1,3 @@
-from .permission import PermissionGuard
+from src.app.middleware.guard.permission import PermissionGuard
+
+__all__ = ["PermissionGuard"]

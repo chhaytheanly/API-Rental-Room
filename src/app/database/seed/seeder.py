@@ -1,12 +1,13 @@
 from sqlalchemy.orm import Session
-from .clear import clear_all_data
-from .role import RoleSeeder
-from .user import UserSeeder
-from .room import RoomSeeder
-from .tenant import TenantSeeder
-from .invoice import InvoiceSeeder
-from .payment import PaymentSeeder
-from ...utils.color import Colors
+
+from src.app.database.seed.clear import clear_all_data
+from src.app.database.seed.invoice import InvoiceSeeder
+from src.app.database.seed.payment import PaymentSeeder
+from src.app.database.seed.role import RoleSeeder
+from src.app.database.seed.room import RoomSeeder
+from src.app.database.seed.tenant import TenantSeeder
+from src.app.database.seed.user import UserSeeder
+from src.app.utils.color import Colors
 
 class DatabaseSeeder:
     """Main orchestrator for seeding database"""

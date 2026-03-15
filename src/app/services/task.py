@@ -1,8 +1,8 @@
 from datetime import date
 import logging
 
-from ..config.session import local_session
-from .invoice import InvoiceService
+from src.app.config.session import local_session
+from src.app.services.invoice import InvoiceService
 
 logger = logging.getLogger(__name__)
 SessionLocal = local_session
