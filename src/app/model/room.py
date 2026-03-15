@@ -2,7 +2,8 @@ import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, Float, String
 from sqlalchemy.orm import relationship
-from ..config.base import Base
+
+from src.app.config.base import Base
 
 
 class Room(Base):

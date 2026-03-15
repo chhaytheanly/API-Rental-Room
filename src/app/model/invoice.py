@@ -2,7 +2,8 @@ from sqlalchemy import Column, Integer, Float, Date, DateTime, ForeignKey, Enum 
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
-from ..config.base import Base
+
+from src.app.config.base import Base
 
 class InvoiceStatus(str, enum.Enum):
     pending = "pending"

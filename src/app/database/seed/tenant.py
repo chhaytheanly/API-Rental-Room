@@ -1,7 +1,8 @@
-from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import random
-from .base import BaseSeeder
+from sqlalchemy.orm import Session
+
+from src.app.database.seed.base import BaseSeeder
 from src.app.model.tenant import Tenant
 from src.app.model.room import Room
 

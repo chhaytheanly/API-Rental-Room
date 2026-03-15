@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from .base import BaseSeeder
+
+from src.app.database.seed.base import BaseSeeder
 from src.app.model.role import Role
 
 class RoleSeeder(BaseSeeder):

@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from .config import settings
+
+from src.app.config.config import settings
 
 # In production, Turn Echo off
 engine = create_engine(

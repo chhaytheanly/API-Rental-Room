@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from .base import BaseSeeder
+from src.app.database.seed.base import BaseSeeder
 from src.app.model.user import User
 from src.app.utils.argon2 import hash_password
-from ...utils.color import Colors
+from src.app.utils.color import Colors
 
 class UserSeeder(BaseSeeder):
     def __init__(self, db: Session):

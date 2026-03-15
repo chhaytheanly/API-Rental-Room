@@ -1,7 +1,8 @@
-from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import random
-from .base import BaseSeeder
+from sqlalchemy.orm import Session
+
+from src.app.database.seed.base import BaseSeeder
 from src.app.model.payment import Payment, PaymentStatus
 from src.app.model.invoice import Invoice, InvoiceStatus
 

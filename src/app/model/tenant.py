@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from ..config.base import Base
+
+from src.app.config.base import Base
 
 class Tenant(Base):
     __tablename__ = "tenants"
