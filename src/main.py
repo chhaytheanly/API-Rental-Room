@@ -29,7 +29,6 @@ app.add_middleware(
 )
 
 permission = PermissionGuard.admin_only
-print("Admin-only routes will be protected with PermissionGuard")
 
 # Protect the routes that require admin access
 for router in [user_router, room_router, billing_router, tenant_router]:
@@ -58,6 +57,7 @@ def home():
         html_content = f.read()
     return HTMLResponse(content=html_content, status_code=200)
 
+# Start Scheduler Every months via Cron Job
 @app.on_event("startup")
 def on_startup():
     init_scheduler()
@@ -66,7 +66,3 @@ def on_startup():
 @app.on_event("shutdown")
 def on_shutdown():
     shutdown_scheduler()
-
-@app.get(router.prefix + "/")
-def read_root(db=Depends(get_db)):
-    return {"Hello": "World"}
