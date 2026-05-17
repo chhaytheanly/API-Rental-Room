@@ -11,3 +11,5 @@ __pycache__/
 docker-compose.yml
 
 uploads/
+
+alembic/versions/*.py

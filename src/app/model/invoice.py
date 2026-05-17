@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, Date, DateTime, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, Integer, Float, Date, DateTime, ForeignKey, Enum as SQLEnum, Identity
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -13,7 +13,7 @@ class InvoiceStatus(str, enum.Enum):
 class Invoice(Base):
     __tablename__ = "invoices"
     
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, Identity(start=1), primary_key=True)
     room_id = Column(Integer, ForeignKey("rooms.id", ondelete="CASCADE"), nullable=False)
     tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
     

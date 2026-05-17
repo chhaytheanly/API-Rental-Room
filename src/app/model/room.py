@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, Float, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, Float, String, Identity
 from sqlalchemy.orm import relationship
 
 from src.app.config.base import Base
@@ -9,7 +9,7 @@ from src.app.config.base import Base
 class Room(Base):
     __tablename__ = "rooms"
     
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, Identity(start=1), primary_key=True)
     name = Column(String(255), nullable=False)
     description = Column(String(255), nullable=True)
     price = Column(Float, nullable=False)
