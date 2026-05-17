@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-
-from src.app.config import get_db, init_scheduler, shutdown_scheduler
-from src.app.middleware.guard import PermissionGuard
+from src.app.config import init_scheduler, shutdown_scheduler
 from src.app.routes import (
     billing_router,
     invoice_router,
@@ -16,9 +14,6 @@ from src.app.routes import (
 
 app = FastAPI(title="Room Management API", version="1.0.0")
 
-public_routes = [loggin_router]
-
-
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
@@ -27,16 +22,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-permission = PermissionGuard.admin_only
-
-# Protect the routes that require admin access
-for router in [user_router, room_router, billing_router, tenant_router]:
-    for route in router.routes:
-        if route not in [r for r in public_routes]:
-            route.dependencies.append(Depends(permission))
-        else:
-            print(f"Route {route} is public and will not be protected with PermissionGuard")
 
 router = APIRouter(prefix="/api/v1")
 app.include_router(prefix=router.prefix, router=loggin_router)

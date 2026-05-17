@@ -8,7 +8,11 @@ from src.app.middleware.guard.permission import PermissionGuard
 from src.app.schema.user import UserCreate, UserResponse, UserUpdate
 from src.app.services.user import UserService
 
-user_router = APIRouter(prefix="/users", tags=["Users"])
+user_router = APIRouter(
+    prefix="/users",
+    tags=["Users"],
+    dependencies=[Depends(PermissionGuard.allow_roles("admin"))],
+)
 
 
 """
@@ -53,7 +57,7 @@ Example of UserCreate with Base64 image:
         return UserResponse.model_validate(user)
 """
 
-@user_router.post("", response_model=UserResponse, dependencies=[Depends(PermissionGuard.admin_only)])
+@user_router.post("", response_model=UserResponse)
 def create_user(
     name: str = Form(...),
     email: str = Form(...),

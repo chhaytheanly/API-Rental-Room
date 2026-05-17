@@ -2,11 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from src.app.config.session import get_db
+from src.app.middleware.guard.permission import PermissionGuard
 from src.app.schema.query import QueryParameters
 from src.app.schema.room import RoomCreate, RoomUpdate
 from src.app.services.room import RoomService
 
-room_router = APIRouter(prefix="/rooms", tags=["Rooms"])
+room_router = APIRouter(
+    prefix="/rooms",
+    tags=["Rooms"],
+    dependencies=[Depends(PermissionGuard.allow_roles("admin", "staff"))],
+)
 
 @room_router.post("/")
 def create_room(data: RoomCreate, db: Session = Depends(get_db)):

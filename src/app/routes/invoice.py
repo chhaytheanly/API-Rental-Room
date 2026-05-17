@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, selectinload
 
 from src.app.config.session import get_db
+from src.app.middleware.guard.permission import PermissionGuard
 from src.app.model.invoice import Invoice
 from src.app.schema.invoice import (
     InvoiceCreate,
@@ -29,6 +30,7 @@ def get_invoices(
     tenant_id: Optional[int] = Query(None),
     room_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
+    current_user=Depends(PermissionGuard.allow_roles("admin", "staff", "tenant")),
 ):
     query = db.query(Invoice).options(
         selectinload(Invoice.room),
@@ -36,13 +38,17 @@ def get_invoices(
         selectinload(Invoice.payments),
     )
 
+    tenant = PermissionGuard.resolve_tenant_for_user(db, current_user)
+    if tenant:
+        query = query.filter(Invoice.tenant_id == tenant.id)
+
     if status:
         query = query.filter(Invoice.status == status)
     if month:
         query = query.filter(Invoice.month == month)
     if year:
         query = query.filter(Invoice.year == year)
-    if tenant_id:
+    if tenant_id and not tenant:
         query = query.filter(Invoice.tenant_id == tenant_id)
     if room_id:
         query = query.filter(Invoice.room_id == room_id)
@@ -64,6 +70,7 @@ def get_invoices(
 def generate_invoice(
     data: InvoiceCreate,
     db: Session = Depends(get_db),
+    current_user=Depends(PermissionGuard.allow_roles("admin", "staff")),
 ):
     try:
         for_date_obj = date.fromisoformat(data.for_date)
@@ -101,6 +108,7 @@ def generate_invoice(
 def generate_all_invoices(
     data: GenerateAllRequest,
     db: Session = Depends(get_db),
+    current_user=Depends(PermissionGuard.allow_roles("admin", "staff")),
 ):
     try:
         date_obj = date.fromisoformat(data.for_date) if data.for_date else None
@@ -119,8 +127,15 @@ def record_payment(
     invoice_id: int,
     payment: PaymentCreate,
     db: Session = Depends(get_db),
+    current_user=Depends(PermissionGuard.allow_roles("admin", "staff", "tenant")),
 ):
     try:
+        tenant = PermissionGuard.resolve_tenant_for_user(db, current_user)
+        if tenant:
+            invoice = InvoiceService.get_invoice_by_id(db, invoice_id)
+            if invoice.tenant_id != tenant.id:
+                raise HTTPException(status_code=403, detail="Cannot pay invoices for other tenants")
+
         result = InvoiceService.record_payment(
             db,
             invoice_id=invoice_id,
@@ -143,6 +158,7 @@ def record_payment(
 def apply_late_fees(
     data: ApplyLateFeesRequest,
     db: Session = Depends(get_db),
+    current_user=Depends(PermissionGuard.allow_roles("admin", "staff")),
 ):
     try:
         result = InvoiceService.update_late_invoices(
@@ -161,6 +177,7 @@ def get_monthly_payment_report(
     month: int = Query(..., ge=1, le=12),
     year: int = Query(..., ge=2000),
     db: Session = Depends(get_db),
+    current_user=Depends(PermissionGuard.allow_roles("admin", "staff")),
 ):
     return InvoiceService.get_payment_report(db, month, year)
 
@@ -170,6 +187,7 @@ def get_tenants_payment_status(
     month: Optional[int] = Query(None, ge=1, le=12),
     year: Optional[int] = Query(None),
     db: Session = Depends(get_db),
+    current_user=Depends(PermissionGuard.allow_roles("admin", "staff")),
 ):
     return InvoiceService.get_all_tenants_payment_status(db, month, year)
 
@@ -180,7 +198,12 @@ def get_tenant_payment_status(
     month: Optional[int] = Query(None, ge=1, le=12),
     year: Optional[int] = Query(None),
     db: Session = Depends(get_db),
+    current_user=Depends(PermissionGuard.allow_roles("admin", "staff", "tenant")),
 ):
+    tenant = PermissionGuard.resolve_tenant_for_user(db, current_user)
+    if tenant and tenant.id != tenant_id:
+        raise HTTPException(status_code=403, detail="Cannot access other tenants payment status")
+
     return InvoiceService.get_tenant_payment_status(db, tenant_id, month, year)
 
 
@@ -189,13 +212,23 @@ def get_late_payers(
     month: Optional[int] = Query(None, ge=1, le=12),
     year: Optional[int] = Query(None),
     db: Session = Depends(get_db),
+    current_user=Depends(PermissionGuard.allow_roles("admin", "staff")),
 ):
     return InvoiceService.get_late_payers(db, month, year)
 
 
 @invoice_router.get("/{invoice_id}", response_model=InvoiceResponse)
-def get_invoice(invoice_id: int, db: Session = Depends(get_db)):
+def get_invoice(
+    invoice_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(PermissionGuard.allow_roles("admin", "staff", "tenant")),
+):
     try:
-        return InvoiceService.get_invoice_by_id(db, invoice_id)
+        invoice = InvoiceService.get_invoice_by_id(db, invoice_id)
+        tenant = PermissionGuard.resolve_tenant_for_user(db, current_user)
+        if tenant and invoice.tenant_id != tenant.id:
+            raise HTTPException(status_code=403, detail="Cannot access other tenants invoices")
+
+        return invoice
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

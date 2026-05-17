@@ -2,11 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from src.app.config.session import get_db
+from src.app.middleware.guard.permission import PermissionGuard
 from src.app.schema.query import QueryParameters
 from src.app.schema.tenant import TenantCreate
 from src.app.services.tenant import TenantService
 
-tenant_router = APIRouter(prefix="/tenants", tags=["Tenants"])
+tenant_router = APIRouter(
+    prefix="/tenants",
+    tags=["Tenants"],
+    dependencies=[Depends(PermissionGuard.allow_roles("admin", "staff"))],
+)
 @tenant_router.post("/")
 def create_tenant(data: TenantCreate, db: Session = Depends(get_db)):
     try:

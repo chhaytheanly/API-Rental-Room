@@ -10,16 +10,18 @@ class UserSeeder(BaseSeeder):
 
     def seed_admin(self, role_id: int) -> User:
         """Seed admin user"""
-        if not self.exists(email="admin@example.com"):
-                admin = self.create_one(
-                    lambda: {
-                        "name": "Admin User",
-                        "email": "admin@example.com",
-                        "password": hash_password("admin123"),
-                        "role_id": role_id,
-                        "image": "uploads/avatars/admin.jpg"
-                    }
-                )
+        admin_email = "adolfvanna@gmail.com"
+        admin = self.db.query(User).filter_by(email=admin_email).first()
+        if not admin:
+            admin = self.create_one(
+                lambda: {
+                    "name": "Admin User",
+                    "email": admin_email,
+                    "password": hash_password("vanna@168"),
+                    "role_id": role_id,
+                    "image": "uploads/avatars/admin.jpg"
+                }
+            )
         Colors.success("Created admin user")
         return admin
 
